@@ -224,6 +224,12 @@ table.data-table.act-table{min-width:1080px}
 .act-group-titles .sub{font-size:11.5px;color:var(--ink-faint)}
 .act-group-body{padding:0 14px 14px}
 .act-group-body .act-list{padding-top:2px}
+.act-subgroup{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.act-subgroup:last-child{margin-bottom:0}
+.act-subgroup-head{padding:10px 12px;font-size:12.5px}
+.act-subgroup-head .act-group-titles b{font-size:12.5px}
+.act-subgroup .act-list{padding:0 10px 10px}
+.act-row-v2.reto-row{background:var(--surface);border-color:rgba(31,159,214,.35)}
 .act-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;background:var(--surface);border:1px solid var(--border); cursor:pointer;}
 .act-check{width:19px;height:19px;border-radius:6px;border:2px solid var(--border-strong);flex:none;display:flex;align-items:center;justify-content:center;color:#fff}
 .act-check.done{background:var(--good);border-color:var(--good)}
@@ -622,31 +628,62 @@ table.data-table.act-table{min-width:1080px}
       </div>
 
       <div class="act-groups">
-        <template x-for="grupo in actividadesAgrupadas()" :key="grupo.key">
+        <template x-for="pg in actividadesAgrupadasPorProceso()" :key="pg.key">
           <div class="act-group">
-            <div class="act-group-head" @click="gruposExpandidos[grupo.key] = !gruposExpandidos[grupo.key]">
-              <template x-if="grupo.tipo === 'reto'">
-                <span class="ini-type-icon" style="width:32px;height:32px" :style="'background:' + clasificacionReto(grupo.reto || {}).bg + ';color:' + clasificacionReto(grupo.reto || {}).color"><span class="material-symbols-outlined" style="font-size:16px" x-text="clasificacionReto(grupo.reto || {}).icon"></span></span>
-              </template>
-              <template x-if="grupo.tipo === 'proceso'">
-                <span class="proc-icon" style="width:32px;height:32px" :style="'background:' + procesoInfo(grupo.proceso).bg + ';color:' + procesoInfo(grupo.proceso).color"><span class="material-symbols-outlined" style="font-size:16px" x-text="procesoInfo(grupo.proceso).icon"></span></span>
-              </template>
+            <div class="act-group-head" @click="gruposExpandidos[pg.key] = !gruposExpandidos[pg.key]">
+              <span class="proc-icon" style="width:32px;height:32px" :style="'background:' + procesoInfo(pg.proceso).bg + ';color:' + procesoInfo(pg.proceso).color"><span class="material-symbols-outlined" style="font-size:16px" x-text="procesoInfo(pg.proceso).icon"></span></span>
               <div class="act-group-titles">
-                <b x-text="grupo.label"></b>
-                <span class="sub" x-show="grupo.tipo === 'reto'" x-text="(grupo.reto?.proceso || '') + (grupo.reto?.subproceso ? ' · ' + grupo.reto.subproceso : '')"></span>
-                <span class="sub" x-show="grupo.tipo === 'proceso'" x-text="grupo.subproceso || 'Sin subproceso'"></span>
+                <b x-text="pg.proceso"></b>
+                <span class="sub" x-text="pg.subprocesos.length + ' subproceso(s)'"></span>
               </div>
-              <span class="chip" x-show="grupo.tipo === 'reto' && grupo.reto" :class="'st-' + estadoSlug(estadoReto(grupo.reto || {}))" x-text="estadoReto(grupo.reto || {})"></span>
-              <template x-if="grupo.tipo === 'reto' && grupo.reto">
-                <button class="icon-btn" @click.stop="abrirDrawerReto(grupo.reto)" title="Ver reto"><span class="material-symbols-outlined">open_in_new</span></button>
-              </template>
               <span class="spacer"></span>
-              <span class="count-pill" x-text="grupo.items.length + (grupo.items.length===1 ? ' actividad' : ' actividades')"></span>
-              <span class="material-symbols-outlined" x-text="gruposExpandidos[grupo.key] ? 'expand_less' : 'expand_more'"></span>
+              <span class="count-pill" x-text="pg.total + (pg.total===1 ? ' elemento' : ' elementos')"></span>
+              <span class="material-symbols-outlined" x-text="gruposExpandidos[pg.key] ? 'expand_less' : 'expand_more'"></span>
             </div>
-            <div class="act-group-body" x-show="gruposExpandidos[grupo.key]" x-collapse>
-              <div class="act-list">
-                <template x-for="act in grupo.items" :key="act.id">
+            <div class="act-group-body" x-show="gruposExpandidos[pg.key]" x-collapse>
+              <template x-for="sg in pg.subprocesos" :key="sg.key">
+                <div class="act-subgroup">
+                  <div class="act-group-head act-subgroup-head" @click="gruposExpandidos[sg.key] = !gruposExpandidos[sg.key]">
+                    <div class="act-group-titles">
+                      <b x-text="sg.subproceso"></b>
+                    </div>
+                    <span class="spacer"></span>
+                    <span class="count-pill" x-text="sg.total + (sg.total===1 ? ' elemento' : ' elementos')"></span>
+                    <span class="material-symbols-outlined" x-text="gruposExpandidos[sg.key] ? 'expand_less' : 'expand_more'"></span>
+                  </div>
+                  <div x-show="gruposExpandidos[sg.key]" x-collapse style="padding:0 0 6px">
+                    <!-- Retos primero -->
+                    <div class="act-list" x-show="sg.retos.length" style="margin-bottom:8px">
+                      <template x-for="reto in sg.retos" :key="'reto-' + reto.id">
+                        <div class="act-row-v2 reto-row" @click="abrirDrawerReto(reto)">
+                          <span class="ini-type-icon" style="width:30px;height:30px" :style="'background:' + clasificacionReto(reto).bg + ';color:' + clasificacionReto(reto).color"><span class="material-symbols-outlined" style="font-size:15px" x-text="clasificacionReto(reto).icon"></span></span>
+                          <div class="act-main-v2">
+                            <div class="act-title-v2" x-text="'Reto: ' + reto.nombre"></div>
+                            <div class="act-meta-v2">
+                              <span class="chip" :class="'st-' + estadoSlug(estadoReto(reto))" x-text="estadoReto(reto)"></span>
+                              <span><span class="material-symbols-outlined">person</span><span x-text="nombreLiderReto(reto)"></span></span>
+                              <span><span class="material-symbols-outlined">task_alt</span><span x-text="(reto.num_macroactividades ?? 0) + ' macroactividades'"></span></span>
+                            </div>
+                          </div>
+                          <div class="act-avance-col">
+                            <div class="progress-top"><span>Cumplim.</span><b class="num" x-text="Math.round(reto.cumplimiento_promedio ?? 0) + '%'"></b></div>
+                            <div class="progress-track"><div class="progress-fill" :style="'width:' + (reto.cumplimiento_promedio ?? 0) + '%; background:' + colorEstado(estadoReto(reto))"></div></div>
+                          </div>
+                          <div class="act-fecha-col">
+                            <span class="material-symbols-outlined">calendar_month</span>
+                            <div><b x-text="formatoFecha(reto.fecha_inicio)"></b>
+                              <div><span style="font-weight:400;color:var(--ink-faint)">→</span> <b x-text="formatoFecha(reto.fecha_fin)"></b></div>
+                            </div>
+                          </div>
+                          <div class="act-actions-col" @click.stop>
+                            <button class="icon-btn" @click="abrirDrawerReto(reto)" title="Ver reto"><span class="material-symbols-outlined">open_in_new</span></button>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                    <!-- Actividades debajo -->
+                    <div class="act-list">
+                      <template x-for="act in sg.actividades" :key="act.id">
                   <div>
                     <div class="act-row-v2" :class="act.es_macroactividad && hijasDeMacro(act).length ? 'tiene-hijas' : ''" @click="act.es_macroactividad ? toggleMacro(act) : verDetalle(act)">
                       <span class="act-check" :class="(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado' ? 'done' : ''">
@@ -659,7 +696,6 @@ table.data-table.act-table{min-width:1080px}
                           <span class="badge-hijas" x-show="act.es_macroactividad && hijasDeMacro(act).length"><span class="material-symbols-outlined">layers</span><span x-text="hijasDeMacro(act).length + ' actividades asociadas'"></span></span>
                           <span x-show="act.es_macroactividad && !hijasDeMacro(act).length"><span class="material-symbols-outlined">layers</span>Macroactividad</span>
                           <span><span class="material-symbols-outlined">person</span><span x-text="nombreUsuario(act.responsable_id)"></span></span>
-                          <span x-show="grupo.tipo === 'proceso'"><span class="material-symbols-outlined">folder</span><span x-text="(act.proceso||'') + (act.subproceso ? ' · ' + act.subproceso : '')"></span></span>
                         </div>
                       </div>
                       <div class="act-avance-col">
@@ -723,10 +759,14 @@ table.data-table.act-table{min-width:1080px}
                   </div>
                 </template>
               </div>
+              <p class="empty-state" style="padding:8px" x-show="!sg.retos.length && !sg.actividades.length">Sin retos ni actividades en este subproceso.</p>
             </div>
           </div>
         </template>
-        <p class="empty-state" x-show="!actividadesAgrupadas().length">No hay actividades que coincidan con los filtros.</p>
+            </div>
+          </div>
+        </template>
+        <p class="empty-state" x-show="!actividadesAgrupadasPorProceso().length">No hay actividades que coincidan con los filtros.</p>
       </div>
     </section>
 
@@ -1356,36 +1396,39 @@ function appData() {
                 return (a.fecha_inicio || '9999').localeCompare(b.fecha_inicio || '9999');
             });
         },
-        actividadesAgrupadas() {
-            const porReto = {};
-            const porProceso = {};
-            this.actividadesOrdenadas().forEach(act => {
-                if (act.reto_id) {
-                    if (!porReto[act.reto_id]) porReto[act.reto_id] = [];
-                    porReto[act.reto_id].push(act);
-                } else {
-                    const key = (act.proceso || 'Sin proceso') + '|' + (act.subproceso || '');
-                    if (!porProceso[key]) porProceso[key] = [];
-                    porProceso[key].push(act);
-                }
+        actividadesAgrupadasPorProceso() {
+            // Estructura: Proceso -> Subproceso -> { retos: [...], actividades: [...] }
+            // Las actividades ligadas a un reto (reto_id) no se listan sueltas: se acceden
+            // a través de la fila "Reto: nombre" (abre el drawer con sus macroactividades).
+            const estructura = {};
+            const asegurar = (proceso, subproceso) => {
+                const p = proceso || 'Sin proceso';
+                const s = subproceso || 'Sin subproceso';
+                estructura[p] = estructura[p] || {};
+                estructura[p][s] = estructura[p][s] || { retos: [], actividades: [] };
+                return estructura[p][s];
+            };
+            this.actividadesOrdenadas().filter(a => !a.reto_id).forEach(act => {
+                asegurar(act.proceso, act.subproceso).actividades.push(act);
             });
-            const gruposReto = Object.keys(porReto).map(retoId => {
-                const reto = this.retos.find(r => r.id === retoId) || null;
-                return {
-                    key: 'reto-' + retoId, tipo: 'reto', reto,
-                    label: reto ? reto.nombre : 'Reto no encontrado',
-                    items: porReto[retoId],
-                };
-            }).sort((a, b) => a.label.localeCompare(b.label));
-            const gruposProceso = Object.keys(porProceso).map(key => {
-                const [proceso, subproceso] = key.split('|');
-                return {
-                    key: 'proc-' + key, tipo: 'proceso', proceso, subproceso: subproceso || '',
-                    label: proceso,
-                    items: porProceso[key],
-                };
-            }).sort((a, b) => a.label.localeCompare(b.label));
-            return [...gruposReto, ...gruposProceso];
+            this.retos.forEach(reto => {
+                asegurar(reto.proceso, reto.subproceso).retos.push(reto);
+            });
+            const procesos = Object.keys(estructura).sort((a, b) => a.localeCompare(b));
+            return procesos.map(proceso => {
+                const subprocesos = Object.keys(estructura[proceso]).sort((a, b) => a.localeCompare(b)).map(subproceso => {
+                    const grupo = estructura[proceso][subproceso];
+                    return {
+                        key: 'sub-' + proceso + '|' + subproceso,
+                        subproceso,
+                        retos: grupo.retos.slice().sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')),
+                        actividades: grupo.actividades,
+                        total: grupo.retos.length + grupo.actividades.length,
+                    };
+                });
+                const total = subprocesos.reduce((s, sg) => s + sg.total, 0);
+                return { key: 'proc-' + proceso, proceso, subprocesos, total };
+            });
         },
         async cargarActividades() {
             try {
