@@ -233,6 +233,8 @@ table.data-table.act-table{min-width:1080px}
 .act-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;background:var(--surface);border:1px solid var(--border); cursor:pointer;}
 .act-check{width:19px;height:19px;border-radius:6px;border:2px solid var(--border-strong);flex:none;display:flex;align-items:center;justify-content:center;color:#fff}
 .act-check.done{background:var(--good);border-color:var(--good)}
+.act-check.clickable{cursor:pointer}
+.act-check.clickable:hover{border-color:var(--good);box-shadow:0 0 0 3px rgba(18,138,99,.15)}
 .act-check .material-symbols-outlined{font-size:13px}
 .act-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
 .act-title{font-size:12.5px;font-weight:600;color:var(--ink)}
@@ -686,7 +688,7 @@ table.data-table.act-table{min-width:1080px}
                       <template x-for="act in sg.actividades" :key="act.id">
                   <div>
                     <div class="act-row-v2" :class="act.es_macroactividad && hijasDeMacro(act).length ? 'tiene-hijas' : ''" @click="act.es_macroactividad ? toggleMacro(act) : verDetalle(act)">
-                      <span class="act-check" :class="(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado' ? 'done' : ''">
+                      <span class="act-check" :class="[(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado' ? 'done' : '', !act.es_macroactividad ? 'clickable' : '']" @click.stop="!act.es_macroactividad && marcarCompletado(act)" :title="!act.es_macroactividad ? 'Marcar completado / no iniciado' : ''">
                         <span class="material-symbols-outlined" x-show="(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado'">check</span>
                       </span>
                       <div class="act-main-v2">
@@ -728,7 +730,7 @@ table.data-table.act-table{min-width:1080px}
                     <div x-show="act.es_macroactividad && macroExpandido[act.id]" x-collapse style="padding:0 0 8px 30px;display:flex;flex-direction:column;gap:6px">
                       <template x-for="hija in (actividadesHijasPorMacro[act.id] || [])" :key="hija.id">
                         <div class="act-row-v2" style="background:var(--surface-2)" @click="verDetalle(hija)">
-                          <span class="act-check" :class="hija.estado_efectivo==='Completado' ? 'done' : (hija.estado_efectivo==='Atrasado' ? 'warn' : '')">
+                          <span class="act-check clickable" :class="hija.estado_efectivo==='Completado' ? 'done' : ''" @click.stop="marcarCompletado(hija)" title="Marcar completado / no iniciado">
                             <span class="material-symbols-outlined" x-show="hija.estado_efectivo==='Completado'">check</span>
                           </span>
                           <div class="act-main-v2">
@@ -940,7 +942,7 @@ table.data-table.act-table{min-width:1080px}
           <div x-show="macroExpandido[macro.id]" x-collapse style="padding-left:31px;display:flex;flex-direction:column;gap:6px">
             <template x-for="hija in (actividadesHijasPorMacro[macro.id] || [])" :key="hija.id">
               <div class="act-row" style="background:var(--surface-2)" @click="verDetalle(hija)">
-                <span class="act-check" :class="hija.estado_efectivo==='Completado' ? 'done' : (hija.estado_efectivo==='Atrasado' ? 'warn' : '')">
+                <span class="act-check clickable" :class="hija.estado_efectivo==='Completado' ? 'done' : ''" @click.stop="marcarCompletado(hija)" title="Marcar completado / no iniciado">
                   <span class="material-symbols-outlined" x-show="hija.estado_efectivo==='Completado'">check</span>
                 </span>
                 <div class="act-main">
@@ -1653,6 +1655,14 @@ function appData() {
         },
 
         // ---------- Seguimiento ----------
+        async marcarCompletado(actividad) {
+            const yaCompletado = actividad.estado_efectivo === 'Completado';
+            try {
+                await this.apiCall(`/api/actividades/${actividad.id}/seguimientos`, 'POST', { avance: yaCompletado ? 0 : 100 });
+                await this.cargarActividades(); await this.cargarKpis(); await this.cargarRetos();
+                this.notificar(yaCompletado ? 'Actividad marcada como no iniciada' : 'Actividad marcada como completada');
+            } catch (e) { this.notificar(e.message, 'error'); }
+        },
         abrirModalSeguimiento(actividad) {
             this.seguimientoActividad = actividad;
             this.formSeguimiento = { avance: actividad.avance_actual || 0, estado: '', comentario: '', evidencia_url: '', monto_ejecutado: null };
