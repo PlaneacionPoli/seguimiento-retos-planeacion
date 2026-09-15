@@ -1,0 +1,74 @@
+rules_version = '2';
+
+// Defensa en profundidad: el backend (FastAPI) usa el Admin SDK y por lo tanto
+// se salta estas reglas, igual que hoy ocurre con la service_role key de Supabase.
+// El control de acceso real vive en main.py (cada endpoint filtra por user_id/uid
+// del token verificado). Estas reglas solo protegen ante un eventual acceso
+// directo desde el cliente a Firestore.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /usuarios/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false; // solo el backend (Admin SDK) escribe perfiles/roles
+    }
+
+    match /user_config/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    function isOwnedByCaller() {
+      return isSignedIn() && resource.data.user_id == request.auth.uid;
+    }
+
+    function isCreatingOwnDoc() {
+      return isSignedIn() && request.resource.data.user_id == request.auth.uid;
+    }
+
+    match /daily_tasks/{docId} {
+      allow read, update, delete: if isOwnedByCaller();
+      allow create: if isCreatingOwnDoc();
+    }
+    match /monthly_plans/{docId} {
+      allow read, update, delete: if isOwnedByCaller();
+      allow create: if isCreatingOwnDoc();
+    }
+    match /monthly_reviews/{docId} {
+      allow read, update, delete: if isOwnedByCaller();
+      allow create: if isCreatingOwnDoc();
+    }
+    match /weekly_logs/{docId} {
+      allow read, update, delete: if isOwnedByCaller();
+      allow create: if isCreatingOwnDoc();
+    }
+    match /actividades/{docId} {
+      allow read, update, delete: if isOwnedByCaller();
+      allow create: if isCreatingOwnDoc();
+    }
+    match /evidencias/{docId} {
+      allow read, update, delete: if isOwnedByCaller();
+      allow create: if isCreatingOwnDoc();
+    }
+    match /financial_categories/{docId} {
+      allow read, update, delete: if isOwnedByCaller();
+      allow create: if isCreatingOwnDoc();
+    }
+    match /financial_records/{docId} {
+      allow read, update, delete: if isOwnedByCaller();
+      allow create: if isCreatingOwnDoc();
+    }
+
+    match /competencias/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+  }
+}

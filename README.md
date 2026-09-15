@@ -22,9 +22,10 @@ Aplicación web completa para gestionar tu plan de desarrollo profesional con:
 ## 🛠️ Stack Tecnológico
 - **Backend**: FastAPI (Python 3.10+)
 - **Frontend**: HTML5 + Tailwind CSS + Alpine.js
-- **Base de Datos**: Supabase (PostgreSQL)
-- **Autenticación**: JWT custom
-- **Gráficos**: Chart.js
+- **Base de Datos**: Firebase Firestore
+- **Autenticación**: Firebase Authentication (Email/Password)
+- **Almacenamiento de evidencias**: Firebase Storage
+- **Gráficos**: ApexCharts
 - **Iconos**: Font Awesome
 
 ## 📦 Instalación y Configuración
@@ -50,32 +51,33 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Configurar Variables de Entorno
+### 3. Configurar Base de Datos y Auth en Firebase
 
-Crea o edita el archivo `.env` con tus credenciales de Supabase:
+1. Ve a [console.firebase.google.com](https://console.firebase.google.com) y crea un proyecto.
+2. Habilita **Firestore Database** (modo nativo), **Authentication** (proveedor Email/Password) y **Storage**.
+3. En **Configuración del proyecto > Cuentas de servicio**, genera una nueva clave privada (descarga un `.json`). Guárdalo como `firebase-service-account.json` en la raíz del proyecto (está en `.gitignore`, nunca se sube a git).
+4. En **Configuración del proyecto > Tus apps**, crea una app web y copia los valores del SDK (`apiKey`, `authDomain`, etc.).
+5. (Opcional) Despliega las reglas e índices incluidos con la [Firebase CLI](https://firebase.google.com/docs/cli): `firebase deploy --only firestore:rules,firestore:indexes,storage`.
+
+### 4. Configurar Variables de Entorno
+
+Crea o edita el archivo `.env` con tus credenciales de Firebase (ver `.env.example`):
 
 ```env
-# Supabase Configuration
-SUPABASE_URL=https://tu-proyecto.supabase.co
-SUPABASE_KEY=tu-service-role-key
+# Backend (Admin SDK)
+FIREBASE_SERVICE_ACCOUNT_FILE=firebase-service-account.json
+FIREBASE_STORAGE_BUCKET=tu-proyecto.appspot.com
 
-# JWT Configuration
-JWT_SECRET_KEY=tu-secret-key-muy-segura
-JWT_ALGORITHM=HS256
-JWT_EXPIRATION_MINUTES=30
+# Frontend (público, no son secretos)
+FIREBASE_WEB_API_KEY=...
+FIREBASE_WEB_AUTH_DOMAIN=tu-proyecto.firebaseapp.com
+FIREBASE_WEB_PROJECT_ID=tu-proyecto
+FIREBASE_WEB_STORAGE_BUCKET=tu-proyecto.appspot.com
+FIREBASE_WEB_MESSAGING_SENDER_ID=...
+FIREBASE_WEB_APP_ID=...
 ```
 
-### 4. Configurar Base de Datos en Supabase
-
-1. Ve a [supabase.com](https://supabase.com) y accede a tu proyecto
-2. Ve a **SQL Editor** y ejecuta el script `database_setup.sql`
-3. Verifica que se crearon las siguientes tablas:
-   - `daily_tasks` - Tareas diarias
-   - `monthly_plans` - Planes mensuales
-   - `monthly_reviews` - Evaluaciones mensuales
-   - `weekly_logs` - Bitácoras semanales
-   - `user_config` - Configuración personalizada por usuario
-   - `metrics` - Métricas calculadas automáticamente
+Las colecciones de Firestore (`daily_tasks`, `monthly_plans`, `monthly_reviews`, `weekly_logs`, `actividades`, `evidencias`, `user_config`, `financial_categories`, `financial_records`, `competencias`, `usuarios`) se crean automáticamente al usar la app — Firestore no requiere definir un esquema por adelantado. `database_setup.sql` y las demás migraciones `.sql` quedan solo como referencia histórica del modelo de datos.
 
 ### 5. Ejecutar Aplicación
 

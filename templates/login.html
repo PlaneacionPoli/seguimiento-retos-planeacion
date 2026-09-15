@@ -1,247 +1,156 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="light">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Plan de Desarrollo</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet">
+    <title>Centro de Mando · Seguimiento de Retos</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {{ firebase_config | tojson }};
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <style>
+        :root{ --brand:#1d3050; --brand-ink:#0f1c30; --brand-2:#0ea9c2; --accent:#1f9fd6; --accent-ink:#0c6f96;
+               --border:#e1e8f0; --ink:#152238; --ink-soft:#4c5b70; --ink-faint:#8593a6; --bg:#f3f6f9;
+               --danger:#c23c46; --danger-bg:#fbe9ea; --good:#128a63; --good-bg:#e3f5ee; }
+        *{box-sizing:border-box}
+        body{margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
+             background:var(--bg); font-family:"Montserrat",system-ui,sans-serif; color:var(--ink);}
+        .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 500; vertical-align:middle;}
+        .card{width:100%; max-width:400px; background:#fff; border:1px solid var(--border); border-radius:18px;
+              box-shadow:0 18px 48px -12px rgba(15,28,48,.24); padding:32px;}
+        .brand-mark{width:56px;height:56px;border-radius:14px;margin:0 auto 16px;background:linear-gradient(135deg,var(--brand-2),var(--accent));
+                    display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 8px 20px -6px rgba(31,159,214,.6);}
+        h1{font-family:"Poppins",sans-serif; font-size:22px; font-weight:800; color:var(--ink); text-align:center; margin:0}
+        p.sub{text-align:center; color:var(--ink-faint); font-size:13px; margin:4px 0 24px}
+        .tabs{display:flex; background:#eaf1f6; border-radius:10px; padding:3px; margin-bottom:20px;}
+        .tabs span{flex:1; text-align:center; padding:8px; border-radius:8px; font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer;}
+        .tabs span.active{background:#fff; color:var(--accent-ink); box-shadow:0 1px 3px rgba(0,0,0,.08);}
+        label{font-size:11px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.3px; display:block; margin-bottom:5px;}
+        .field{position:relative; margin-bottom:16px;}
+        .field .material-symbols-outlined{position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--ink-faint); font-size:18px;}
+        .field input{width:100%; padding:10px 12px 10px 36px; border-radius:9px; border:1px solid var(--border); font-size:14px; font-family:inherit; color:var(--ink);}
+        .field input:focus{outline:none; border-color:var(--accent);}
+        .field.plain input{padding-left:12px}
+        .toggle-eye{position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--ink-faint);}
+        button.submit{width:100%; padding:11px; border:none; border-radius:10px; background:var(--accent); color:#fff;
+                       font-weight:700; font-size:13.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+                       box-shadow:0 4px 14px -4px rgba(31,159,214,.6);}
+        button.submit:hover{background:var(--accent-ink)}
+        button.submit:disabled{opacity:.7}
+        .banner{margin-top:14px; padding:10px 12px; border-radius:9px; font-size:12.5px; display:flex; align-items:center; gap:8px;}
+        .banner.err{background:var(--danger-bg); color:var(--danger);}
+        .banner.ok{background:var(--good-bg); color:var(--good);}
+        .hint{font-size:10.5px; color:var(--ink-faint); margin-top:3px;}
+    </style>
 </head>
-<body class="bg-gradient-to-br from-purple-50 to-indigo-100 min-h-screen flex items-center justify-center p-4" 
-      x-data="loginData()" 
-      x-init="checkAuth()">
-    
-    <div class="card w-full max-w-md bg-base-100 shadow-2xl">
-        <div class="card-body">
-            <!-- Logo y Título -->
-            <div class="text-center mb-6">
-                <div class="w-20 h-20 mx-auto mb-4 bg-primary rounded-full flex items-center justify-center">
-                    <i class="fas fa-chart-line text-4xl text-white"></i>
-                </div>
-                <h1 class="text-3xl font-bold text-primary">Plan de Desarrollo</h1>
-                <p class="text-gray-600 mt-2">Gestiona tu crecimiento profesional</p>
-            </div>
-            
-            <!-- Tabs de Login/Registro -->
-            <div class="tabs tabs-boxed mb-6">
-                <a class="tab" :class="isLogin ? 'tab-active' : ''" @click="isLogin = true">Iniciar Sesión</a>
-                <a class="tab" :class="!isLogin ? 'tab-active' : ''" @click="isLogin = false">Registrarse</a>
-            </div>
-            
-            <!-- Formulario de Login -->
-            <form x-show="isLogin" @submit.prevent="handleLogin">
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">Correo Electrónico</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-envelope text-gray-400"></i>
-                        </div>
-                        <input type="email" 
-                               x-model="email" 
-                               placeholder="tu@email.com" 
-                               class="input input-bordered w-full pl-10"
-                               required>
-                    </div>
-                </div>
-                
-                <div class="form-control mt-4">
-                    <label class="label">
-                        <span class="label-text">Contraseña</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-lock text-gray-400"></i>
-                        </div>
-                        <input :type="showPassword ? 'text' : 'password'" 
-                               x-model="password" 
-                               placeholder="••••••••" 
-                               class="input input-bordered w-full pl-10 pr-10"
-                               required>
-                        <button type="button" 
-                                @click="showPassword = !showPassword"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-gray-400"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="form-control mt-6">
-                    <button type="submit" class="btn btn-primary" :class="loading ? 'loading' : ''">
-                        <i class="fas fa-sign-in-alt mr-2" x-show="!loading"></i>
-                        <span x-text="loading ? 'Iniciando sesión...' : 'Iniciar Sesión'"></span>
-                    </button>
-                </div>
-            </form>
-            
-            <!-- Formulario de Registro -->
-            <form x-show="!isLogin" @submit.prevent="handleRegister">
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">Nombre Completo</span>
-                    </label>
-                    <input type="text" 
-                           x-model="nombreCompleto" 
-                           placeholder="Juan Pérez" 
-                           class="input input-bordered w-full">
-                </div>
-                
-                <div class="form-control mt-4">
-                    <label class="label">
-                        <span class="label-text">Correo Electrónico</span>
-                    </label>
-                    <input type="email" 
-                           x-model="email" 
-                           placeholder="tu@email.com" 
-                           class="input input-bordered w-full"
-                           required>
-                </div>
-                
-                <div class="form-control mt-4">
-                    <label class="label">
-                        <span class="label-text">Contraseña</span>
-                    </label>
-                    <input :type="showPassword ? 'text' : 'password'" 
-                           x-model="password" 
-                           placeholder="••••••••" 
-                           class="input input-bordered w-full"
-                           required
-                           minlength="6">
-                    <label class="label">
-                        <span class="label-text-alt">Mínimo 6 caracteres</span>
-                    </label>
-                </div>
-                
-                <div class="form-control mt-6">
-                    <button type="submit" class="btn btn-primary" :class="loading ? 'loading' : ''">
-                        <i class="fas fa-user-plus mr-2" x-show="!loading"></i>
-                        <span x-text="loading ? 'Registrando...' : 'Crear Cuenta'"></span>
-                    </button>
-                </div>
-            </form>
-            
-            <!-- Alert de error -->
-            <div x-show="error" class="alert alert-error mt-4" x-transition>
-                <i class="fas fa-exclamation-circle"></i>
-                <span x-text="errorMessage"></span>
-            </div>
-            
-            <!-- Alert de éxito -->
-            <div x-show="success" class="alert alert-success mt-4" x-transition>
-                <i class="fas fa-check-circle"></i>
-                <span x-text="successMessage"></span>
-            </div>
+<body x-data="loginData()" x-init="checkAuth()">
+
+    <div class="card">
+        <div class="brand-mark"><span class="material-symbols-outlined" style="font-size:26px">account_balance</span></div>
+        <h1>Centro de Mando</h1>
+        <p class="sub">Seguimiento de Retos y Plan Operativo</p>
+
+        <div class="tabs">
+            <span :class="isLogin ? 'active' : ''" @click="isLogin = true">Iniciar Sesión</span>
+            <span :class="!isLogin ? 'active' : ''" @click="isLogin = false">Registrarse</span>
         </div>
+
+        <form x-show="isLogin" @submit.prevent="handleLogin">
+            <label>Correo electrónico</label>
+            <div class="field">
+                <span class="material-symbols-outlined">mail</span>
+                <input type="email" x-model="email" placeholder="tu@email.com" required>
+            </div>
+            <label>Contraseña</label>
+            <div class="field">
+                <span class="material-symbols-outlined">lock</span>
+                <input :type="showPassword ? 'text' : 'password'" x-model="password" placeholder="••••••••" required>
+                <button type="button" class="toggle-eye" @click="showPassword = !showPassword">
+                    <span class="material-symbols-outlined" x-text="showPassword ? 'visibility_off' : 'visibility'"></span>
+                </button>
+            </div>
+            <button type="submit" class="submit" :disabled="loading">
+                <span class="material-symbols-outlined" x-show="!loading" style="font-size:16px">login</span>
+                <span x-text="loading ? 'Iniciando sesión...' : 'Iniciar Sesión'"></span>
+            </button>
+        </form>
+
+        <form x-show="!isLogin" @submit.prevent="handleRegister">
+            <label>Nombre completo</label>
+            <div class="field plain"><input type="text" x-model="nombreCompleto" placeholder="Juan Pérez"></div>
+            <label>Correo electrónico</label>
+            <div class="field">
+                <span class="material-symbols-outlined">mail</span>
+                <input type="email" x-model="email" placeholder="tu@email.com" required>
+            </div>
+            <label>Contraseña</label>
+            <div class="field">
+                <span class="material-symbols-outlined">lock</span>
+                <input :type="showPassword ? 'text' : 'password'" x-model="password" placeholder="••••••••" required minlength="6">
+            </div>
+            <div class="hint">Mínimo 6 caracteres</div>
+            <button type="submit" class="submit" style="margin-top:12px" :disabled="loading">
+                <span class="material-symbols-outlined" x-show="!loading" style="font-size:16px">person_add</span>
+                <span x-text="loading ? 'Registrando...' : 'Crear Cuenta'"></span>
+            </button>
+        </form>
+
+        <div class="banner err" x-show="error" x-transition><span class="material-symbols-outlined" style="font-size:16px">error</span><span x-text="errorMessage"></span></div>
+        <div class="banner ok" x-show="success" x-transition><span class="material-symbols-outlined" style="font-size:16px">check_circle</span><span x-text="successMessage"></span></div>
     </div>
-    
+
     <script>
         function loginData() {
             return {
-                isLogin: true,
-                showPassword: false,
-                loading: false,
-                error: false,
-                success: false,
-                errorMessage: '',
-                successMessage: '',
-                
-                // Form fields
-                email: '',
-                password: '',
-                nombreCompleto: '',
-                
+                isLogin: true, showPassword: false, loading: false,
+                error: false, success: false, errorMessage: '', successMessage: '',
+                email: '', password: '', nombreCompleto: '',
+
                 checkAuth() {
-                    const token = localStorage.getItem('access_token');
-                    if (token) {
-                        window.location.href = '/dashboard';
-                    }
+                    firebase.auth().onAuthStateChanged((user) => {
+                        if (user) window.location.href = '/dashboard';
+                    });
                 },
-                
                 async handleLogin() {
-                    this.loading = true;
-                    this.error = false;
-                    
+                    this.loading = true; this.error = false;
                     try {
-                        const response = await fetch('/api/auth/login', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                email: this.email,
-                                password: this.password
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            const data = await response.json();
-                            localStorage.setItem('access_token', data.access_token);
-                            localStorage.setItem('user_email', data.email);
-                            localStorage.setItem('user_id', data.user_id);
-                            
-                            this.success = true;
-                            this.successMessage = '¡Inicio de sesión exitoso! Redirigiendo...';
-                            
-                            setTimeout(() => {
-                                window.location.href = '/dashboard';
-                            }, 1000);
-                        } else {
-                            const errorData = await response.json();
-                            this.error = true;
-                            this.errorMessage = errorData.detail || 'Credenciales inválidas';
-                        }
+                        await firebase.auth().signInWithEmailAndPassword(this.email, this.password);
+                        localStorage.setItem('user_email', this.email);
+                        this.success = true; this.successMessage = '¡Inicio de sesión exitoso! Redirigiendo...';
+                        setTimeout(() => window.location.href = '/dashboard', 1000);
                     } catch (err) {
-                        this.error = true;
-                        this.errorMessage = 'Error de conexión. Verifica tu red.';
-                    } finally {
-                        this.loading = false;
-                    }
+                        this.error = true; this.errorMessage = err.message || 'Credenciales inválidas';
+                    } finally { this.loading = false; }
                 },
-                
                 async handleRegister() {
-                    this.loading = true;
-                    this.error = false;
-                    
+                    this.loading = true; this.error = false;
                     try {
                         const response = await fetch('/api/auth/register', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                email: this.email,
-                                password: this.password,
-                                nombre_completo: this.nombreCompleto
-                            })
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: this.email, password: this.password, nombre_completo: this.nombreCompleto })
                         });
-                        
                         if (response.ok) {
                             const data = await response.json();
-                            localStorage.setItem('access_token', data.access_token);
+                            await firebase.auth().signInWithCustomToken(data.custom_token);
                             localStorage.setItem('user_email', data.email);
-                            localStorage.setItem('user_id', data.user_id);
-                            
-                            this.success = true;
-                            this.successMessage = '¡Cuenta creada exitosamente! Redirigiendo...';
-                            
-                            setTimeout(() => {
-                                window.location.href = '/dashboard';
-                            }, 1000);
+                            this.success = true; this.successMessage = '¡Cuenta creada exitosamente! Redirigiendo...';
+                            setTimeout(() => window.location.href = '/dashboard', 1000);
                         } else {
                             const errorData = await response.json();
-                            this.error = true;
-                            this.errorMessage = errorData.detail || 'Error al crear cuenta';
+                            this.error = true; this.errorMessage = errorData.detail || 'Error al crear cuenta';
                         }
                     } catch (err) {
-                        this.error = true;
-                        this.errorMessage = 'Error de conexión. Verifica tu red.';
-                    } finally {
-                        this.loading = false;
-                    }
+                        this.error = true; this.errorMessage = err.message || 'Error de conexión. Verifica tu red.';
+                    } finally { this.loading = false; }
                 }
             }
         }

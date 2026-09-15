@@ -33,11 +33,7 @@ def check_env_var(var_name, is_secret=False, required=True):
             return True
 
     # Verificar valores por defecto inseguros
-    if var_name == "SECRET_KEY" and "super-segura" in value:
-        print(f"❌ {var_name}: Usando valor por defecto (INSEGURO)")
-        return False
-
-    if var_name == "SUPABASE_URL" and "tuproyecto" in value:
+    if var_name == "FIREBASE_WEB_PROJECT_ID" and "tu-proyecto" in value:
         print(f"❌ {var_name}: Usando valor de ejemplo (INVÁLIDO)")
         return False
 
@@ -62,6 +58,7 @@ def check_files():
         "templates/dashboard.html": True,
         "templates/login.html": True,
         ".env": False,  # No debe estar en producción
+        "firebase-service-account.json": False,  # No debe estar en producción (usar FIREBASE_SERVICE_ACCOUNT_JSON)
     }
 
     all_ok = True
@@ -89,7 +86,7 @@ def check_gitignore():
     required_patterns = [".env", "__pycache__", "*.pyc", "venv/"]
 
     try:
-        with open(".gitignore", "r") as f:
+        with open(".gitignore", "r", encoding="utf-8") as f:
             content = f.read()
 
         all_ok = True
@@ -110,11 +107,14 @@ def check_environment():
     print_header("Verificación de Variables de Entorno")
 
     checks = [
-        check_env_var("SUPABASE_URL", is_secret=False, required=True),
-        check_env_var("SUPABASE_KEY", is_secret=True, required=True),
-        check_env_var("SUPABASE_SERVICE_KEY", is_secret=True, required=True),
-        check_env_var("SECRET_KEY", is_secret=True, required=True),
-        check_env_var("ALGORITHM", is_secret=False, required=True),
+        check_env_var("FIREBASE_SERVICE_ACCOUNT_JSON", is_secret=True, required=True),
+        check_env_var("FIREBASE_STORAGE_BUCKET", is_secret=False, required=True),
+        check_env_var("FIREBASE_WEB_API_KEY", is_secret=True, required=True),
+        check_env_var("FIREBASE_WEB_AUTH_DOMAIN", is_secret=False, required=True),
+        check_env_var("FIREBASE_WEB_PROJECT_ID", is_secret=False, required=True),
+        check_env_var("FIREBASE_WEB_STORAGE_BUCKET", is_secret=False, required=True),
+        check_env_var("FIREBASE_WEB_MESSAGING_SENDER_ID", is_secret=False, required=True),
+        check_env_var("FIREBASE_WEB_APP_ID", is_secret=False, required=True),
         check_env_var("ENVIRONMENT", is_secret=False, required=False),
         check_env_var("ALLOWED_ORIGINS", is_secret=False, required=True),
     ]
@@ -164,16 +164,14 @@ def check_requirements():
     required_packages = [
         "fastapi",
         "uvicorn",
-        "supabase",
-        "python-jose",
-        "passlib",
+        "firebase-admin",
         "pydantic",
         "python-multipart",
         "python-dotenv"
     ]
 
     try:
-        with open("requirements.txt", "r") as f:
+        with open("requirements.txt", "r", encoding="utf-8") as f:
             content = f.read().lower()
 
         all_ok = True

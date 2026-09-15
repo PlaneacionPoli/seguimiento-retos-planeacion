@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plan de Desarrollo Profesional</title>
+    <title>Centro de Mando · Seguimiento de Retos</title>
     <script>
-        // Redirect logic based on authentication
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            window.location.href = '/dashboard';
-        } else {
-            window.location.href = '/login';
-        }
+        // La sesión real (Firebase Auth) se verifica en /dashboard; si no hay
+        // sesión, esa página redirige a /login.
+        window.location.href = '/dashboard';
     </script>
 </head>
 <body>

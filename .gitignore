@@ -2,8 +2,12 @@
 # ARCHIVOS CRÍTICOS - NO SUBIR A GITHUB
 # =======================================
 
-# Variables de entorno con credenciales de Supabase
+# Variables de entorno con credenciales de Firebase
 .env
+
+# Service account de Firebase (nunca subir a git)
+firebase-service-account.json
+*firebase-adminsdk*.json
 
 # =======================================
 # ENTORNO VIRTUAL DE PYTHON
@@ -27,6 +31,7 @@ venv.bak/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*.pyc
 *$py.class
 
 # C extensions
@@ -162,6 +167,11 @@ lerna-debug.log*
 *.backup
 *.old
 *.tmp
+backup_*.json
+
+# Datos de origen (ya importados a Firestore, no deben publicarse en el repo)
+BD_Planeacion.xlsx
+Base_Completa_Retos_2026.xlsx
 
 # Certificados y claves
 *.pem
