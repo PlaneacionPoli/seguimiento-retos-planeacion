@@ -88,23 +88,49 @@ Abre `service_account_oneline_NO_SUBIR.txt`, copia **todo** su contenido (empiez
 
 ### 3-8. Configuración pública del frontend
 
-**De dónde sale (los 6 valores salen de la misma pantalla):**
+Esto son **6 variables independientes**. En Render, clic en **"Add Environment Variable"** una vez por cada una (igual que hiciste con la variable 1): cada clic te da una fila con dos casillas, **Key** (el nombre) y **Value** (el valor) — no se pegan las 6 juntas en un solo campo.
+
+**Primero, ve a buscar los 6 valores en Firebase:**
 1. Firebase Console → ⚙️ → **"Configuración del proyecto"** → pestaña **"General"**
 2. Baja hasta **"Tus apps"** ("Your apps") → busca la app web (ícono `</>`, no la de Android/iOS)
-3. Si no ves una, créala con **"Agregar app" → Web** (nombre libre, no hace falta Firebase Hosting)
+3. Si no ves ninguna, créala con **"Agregar app" → Web** (nombre libre, no hace falta Firebase Hosting)
 4. Clic en **"Configuración del SDK"** ("SDK setup and configuration") → opción **"Config"** (no "npm")
-5. Verás un bloque `const firebaseConfig = { ... }` — cada campo va a esta variable:
+5. Verás un bloque de código así (con tus valores reales en vez de estos de ejemplo):
 
-| Campo en `firebaseConfig` | Variable de entorno |
+```js
+const firebaseConfig = {
+  apiKey: "AIzaSyD-EjEmPl0-abc123XYZ",
+  authDomain: "gerencia-planeacion-y-gestion.firebaseapp.com",
+  projectId: "gerencia-planeacion-y-gestion",
+  storageBucket: "gerencia-planeacion-y-gestion.firebasestorage.app",
+  messagingSenderId: "369422398355",
+  appId: "1:369422398355:web:f7b19c96cb696808b66e66"
+};
+```
+
+**Ahora en Render, crea estas 6 filas** — en cada una, el texto entre comillas de arriba (sin las comillas) va en **Value**:
+
+| Key (cópialo tal cual) | Value (el texto entre comillas de esa línea en `firebaseConfig`) |
 |---|---|
-| `apiKey` | `FIREBASE_WEB_API_KEY` |
-| `authDomain` | `FIREBASE_WEB_AUTH_DOMAIN` |
-| `projectId` | `FIREBASE_WEB_PROJECT_ID` |
-| `storageBucket` | `FIREBASE_WEB_STORAGE_BUCKET` |
-| `messagingSenderId` | `FIREBASE_WEB_MESSAGING_SENDER_ID` |
-| `appId` | `FIREBASE_WEB_APP_ID` |
+| `FIREBASE_WEB_API_KEY` | lo que está después de `apiKey:` |
+| `FIREBASE_WEB_AUTH_DOMAIN` | lo que está después de `authDomain:` |
+| `FIREBASE_WEB_PROJECT_ID` | lo que está después de `projectId:` |
+| `FIREBASE_WEB_STORAGE_BUCKET` | lo que está después de `storageBucket:` |
+| `FIREBASE_WEB_MESSAGING_SENDER_ID` | lo que está después de `messagingSenderId:` |
+| `FIREBASE_WEB_APP_ID` | lo que está después de `appId:` |
 
-Estos 6 valores **no son secretos** (se inyectan tal cual en el HTML que ve el navegador), así que no hay riesgo en copiarlos directamente. Ya están guardados en tu `.env` local si quieres copiarlos de ahí en vez de volver a la consola.
+Es decir, terminas con 6 filas en Render que se ven así (con tus valores reales):
+
+```
+FIREBASE_WEB_API_KEY = AIzaSyD-EjEmPl0-abc123XYZ
+FIREBASE_WEB_AUTH_DOMAIN = gerencia-planeacion-y-gestion.firebaseapp.com
+FIREBASE_WEB_PROJECT_ID = gerencia-planeacion-y-gestion
+FIREBASE_WEB_STORAGE_BUCKET = gerencia-planeacion-y-gestion.firebasestorage.app
+FIREBASE_WEB_MESSAGING_SENDER_ID = 369422398355
+FIREBASE_WEB_APP_ID = 1:369422398355:web:f7b19c96cb696808b66e66
+```
+
+Estos 6 valores **no son secretos** (se inyectan tal cual en el HTML que ve el navegador), así que no hay riesgo en copiarlos directamente. Como además ya están guardados en tu `.env` local (con tus valores reales), puedes abrir ese archivo y copiarlos de ahí directamente en vez de volver a la consola de Firebase.
 
 ### 9. `ENVIRONMENT`
 
