@@ -638,7 +638,7 @@ async def actualizar_catalogos(payload: CatalogosUpdate, current: CurrentUser = 
 # ============================================
 
 @app.get("/api/admin/usuarios")
-async def listar_usuarios(current: CurrentUser = Depends(require_role("admin"))):
+async def listar_usuarios(current: CurrentUser = Depends(require_role("gerencia", "admin"))):
     usuarios = [doc_to_dict(d) for d in db.collection("usuarios").stream()]
     usuarios.sort(key=lambda u: u.get("nombre_completo") or u.get("email") or "")
     return usuarios
