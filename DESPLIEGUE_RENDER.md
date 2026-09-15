@@ -1,367 +1,189 @@
 # 🚀 Despliegue en Render - Guía Paso a Paso
 
+> Actualizado para la versión institucional (Firebase Auth + Firestore).
+> El código vive en: **https://github.com/PlaneacionPoli/seguimiento-retos-planeacion**
+
 ## ✅ Pre-requisitos Verificados
 
-Los siguientes archivos están listos:
-- ✅ `main.py` - Aplicación FastAPI
-- ✅ `requirements.txt` - Dependencias
-- ✅ `Procfile` - Comando de inicio
-- ✅ `runtime.txt` - Python 3.11.7
-- ✅ `.gitignore` - Archivos a ignorar
-- ✅ `templates/` - Carpeta con HTML
+Corre `python check_production.py` antes de desplegar. Verifica:
+- ✅ `main.py`, `requirements.txt`, `Procfile`, `runtime.txt`, `.gitignore`
+- ✅ `templates/dashboard.html`, `templates/login.html`
+- ✅ Que `.env` y `firebase-service-account.json` NO estén trackeados en git
 
 ---
 
-## 📝 Paso 1: Preparar Git (si no lo has hecho)
+## 📤 Paso 1: Confirmar que el código está en GitHub
 
-Abre una terminal en tu proyecto y ejecuta:
-
-```bash
-# Verificar si ya tienes git inicializado
-git status
-
-# Si NO está inicializado, ejecuta:
-git init
-git add .
-git commit -m "Preparar para despliegue en Render"
-```
-
----
-
-## 📤 Paso 2: Subir a GitHub
-
-### Opción A: Si NO tienes repositorio en GitHub
-
-1. Ve a [github.com](https://github.com) e inicia sesión
-2. Clic en el botón "+" arriba a la derecha → "New repository"
-3. Configura tu repositorio:
-   - **Repository name**: `plan-desarrollo-profesional`
-   - **Description**: Plan de Desarrollo Profesional con FastAPI
-   - **Public** o **Private** (tu elección, ambos funcionan con Render)
-   - ❌ NO marques "Initialize with README" (ya tienes archivos)
-4. Clic en "Create repository"
-
-5. En tu terminal, conecta y sube:
-```bash
-git remote add origin https://github.com/TU-USUARIO/plan-desarrollo-profesional.git
-git branch -M main
-git push -u origin main
-```
-
-### Opción B: Si YA tienes el repositorio
+El repositorio ya existe y el código ya fue subido:
 
 ```bash
-git add .
-git commit -m "Preparar para despliegue en Render con runtime"
+git remote -v   # debe mostrar origin -> PlaneacionPoli/seguimiento-retos-planeacion
 git push origin main
 ```
 
 ---
 
-## 🌐 Paso 3: Crear cuenta en Render
+## 🌐 Paso 2: Crear cuenta en Render
 
 1. Ve a [render.com](https://render.com)
-2. Clic en **"Get Started for Free"**
-3. Opciones de registro:
-   - **Recomendado:** "Sign up with GitHub" (más rápido)
-   - O usa email/password
-4. Completa el registro
-5. ✅ **NO se requiere tarjeta de crédito**
+2. **"Get Started for Free"** → Recomendado: "Sign up with GitHub" (autoriza la cuenta **PlaneacionPoli**)
+3. No se requiere tarjeta de crédito para el plan Free
 
 ---
 
-## 🆕 Paso 4: Crear Web Service
+## 🆕 Paso 3: Crear el Web Service
 
-1. En el dashboard de Render, clic en **"New +"** (botón azul arriba a la derecha)
-2. Selecciona **"Web Service"**
-3. Conectar GitHub:
-   - Si es primera vez: Clic en "Connect GitHub" y autoriza Render
-   - Busca tu repositorio: `plan-desarrollo-profesional`
-   - Clic en **"Connect"**
-
----
-
-## ⚙️ Paso 5: Configurar el Web Service
-
-Completa el formulario con estos valores EXACTOS:
+1. Dashboard de Render → **"New +"** → **"Web Service"**
+2. Conecta GitHub y selecciona el repositorio **`seguimiento-retos-planeacion`**
 
 ### Información Básica
 
 | Campo | Valor |
 |-------|-------|
-| **Name** | `plan-desarrollo-profesional` |
-| **Region** | Oregon (US West) o Frankfurt (EU Central) |
+| **Name** | `seguimiento-retos-planeacion` |
+| **Region** | Oregon (US West) u otra cercana |
 | **Branch** | `main` |
-| **Root Directory** | (dejar vacío) |
+| **Root Directory** | (vacío) |
 | **Runtime** | Python 3 |
 
-### Build & Deploy Settings
+### Build & Deploy
 
 | Campo | Valor |
 |-------|-------|
 | **Build Command** | `pip install -r requirements.txt` |
 | **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
-
-### Instance Type
-
-| Campo | Valor |
-|-------|-------|
-| **Plan** | ⚡ **Free** |
+| **Plan** | Free |
 
 ---
 
-## 🔐 Paso 6: Configurar Variables de Entorno
+## 🔐 Paso 4: Variables de Entorno
 
-Antes de crear el servicio, baja hasta **"Environment Variables"**.
+Antes de crear el servicio, en **"Environment Variables"**, agrega cada una:
 
-### Variables Requeridas
+### 1. FIREBASE_SERVICE_ACCOUNT_JSON (secreta)
+Pega el **contenido completo del JSON de la service account en una sola línea**.
+No lo escribas a mano: genera el valor localmente y cópialo desde el archivo
+(nunca lo compartas ni lo subas a git):
 
-Clic en **"Add Environment Variable"** para cada una:
-
-#### 1. SUPABASE_URL
-```
-Key: SUPABASE_URL
-Value: https://xxxxxx.supabase.co
-```
-**Obtener:** Supabase Dashboard → Project Settings → API → URL
-
-#### 2. SUPABASE_KEY
-```
-Key: SUPABASE_KEY
-Value: eyJhbGc...
-```
-**Obtener:** Supabase Dashboard → Project Settings → API → anon public
-
-#### 3. SUPABASE_SERVICE_KEY
-```
-Key: SUPABASE_SERVICE_KEY
-Value: eyJhbGc...
-```
-**Obtener:** Supabase Dashboard → Project Settings → API → service_role
-⚠️ **IMPORTANTE:** Esta es sensible, NO la compartas
-
-#### 4. SECRET_KEY
-```
-Key: SECRET_KEY
-Value: WAkOange0ksUtUqk1NHmnA-11-_Y4wFhoJvroOov5wQ
-```
-**Nota:** Usa el SECRET_KEY generado arriba o genera uno nuevo:
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
+python -c "import json; print(json.dumps(json.load(open('firebase-service-account.json', encoding='utf-8'))))" > service_account_oneline_NO_SUBIR.txt
 ```
 
-#### 5. ALGORITHM
+Abre `service_account_oneline_NO_SUBIR.txt`, copia todo su contenido y pégalo como
+valor de esta variable en Render. Ese archivo ya está en `.gitignore` — bórralo
+localmente cuando termines si quieres.
+
+### 2. FIREBASE_STORAGE_BUCKET
 ```
-Key: ALGORITHM
-Value: HS256
+Value: (dejar vacío mientras no actives Firebase Storage — la app usa /uploads local como respaldo)
 ```
 
-#### 6. ENVIRONMENT
+### 3-8. Configuración pública del frontend (copia los valores de tu `.env` local)
 ```
-Key: ENVIRONMENT
+FIREBASE_WEB_API_KEY=...
+FIREBASE_WEB_AUTH_DOMAIN=gerencia-planeacion-y-gestion.firebaseapp.com
+FIREBASE_WEB_PROJECT_ID=gerencia-planeacion-y-gestion
+FIREBASE_WEB_STORAGE_BUCKET=gerencia-planeacion-y-gestion.firebasestorage.app
+FIREBASE_WEB_MESSAGING_SENDER_ID=...
+FIREBASE_WEB_APP_ID=...
+```
+
+### 9. ENVIRONMENT
+```
 Value: production
 ```
 
-#### 7. ALLOWED_ORIGINS
+### 10. ALLOWED_ORIGINS
 ```
-Key: ALLOWED_ORIGINS
-Value: https://plan-desarrollo-profesional.onrender.com
+Value: https://seguimiento-retos-planeacion.onrender.com
 ```
-⚠️ **IMPORTANTE:** Reemplaza `plan-desarrollo-profesional` con el nombre que elegiste en el Paso 5
+⚠️ Ajusta el dominio si Render te asigna uno distinto (lo confirmas en el Paso 6).
 
----
-
-## 🚀 Paso 7: Desplegar
-
-1. Revisa que todas las variables estén correctas
-2. Clic en **"Create Web Service"** (botón azul al final)
-3. Render comenzará a construir tu aplicación
-
-### Proceso de Deploy (3-5 minutos)
-
-Verás en la consola:
-
+### 11. DEBUG
 ```
-==> Cloning from https://github.com/tu-usuario/plan-desarrollo-profesional...
-==> Checking out commit...
-==> Building...
-==> Installing dependencies from requirements.txt...
-==> Starting service...
-==> Your service is live 🎉
+Value: False
 ```
 
----
-
-## ✅ Paso 8: Verificar Despliegue
-
-1. Una vez que veas **"Live"** con un punto verde ✅
-2. Arriba verás tu URL: `https://plan-desarrollo-profesional.onrender.com`
-3. Clic en la URL para abrir tu aplicación
-4. Deberías ver la página de login
-
-### Primera Carga
-- ⏰ Puede tardar **30-60 segundos** en cargar
-- Esto es normal en el plan Free (la app se "despierta")
-- Cargas posteriores serán rápidas
+> Ya **no** se usan `SUPABASE_*`, `SECRET_KEY`, `ALGORITHM` ni
+> `ACCESS_TOKEN_EXPIRE_MINUTES` — esas variables eran de la versión anterior
+> (Supabase). Todo el login ahora es Firebase Authentication.
 
 ---
 
-## 🔧 Paso 9: Actualizar ALLOWED_ORIGINS (si es necesario)
+## 🔒 Paso 5: Autorizar el dominio en Firebase Authentication
 
-Si la URL final es diferente:
+Firebase bloquea el login desde dominios no autorizados. Antes de probar:
 
-1. En Render, menú izquierdo → **"Environment"**
-2. Busca la variable `ALLOWED_ORIGINS`
-3. Clic en el lápiz para editar
-4. Actualiza con la URL correcta: `https://tu-url-real.onrender.com`
-5. Clic en **"Save Changes"**
-6. Render redesplegará automáticamente (2-3 minutos)
+1. Ve a [Firebase Console](https://console.firebase.google.com/) → proyecto `gerencia-planeacion-y-gestion`
+2. **Authentication → Settings → Authorized domains**
+3. Agrega tu dominio de Render: `seguimiento-retos-planeacion.onrender.com`
 
 ---
 
-## 🧪 Paso 10: Probar la Aplicación
+## 🚀 Paso 6: Desplegar
 
-### Test 1: Login
-1. Ve a tu URL: `https://plan-desarrollo-profesional.onrender.com`
-2. Debería aparecer la página de login
-3. Intenta iniciar sesión con credenciales existentes
-
-### Test 2: Registro
-1. Clic en "Registrarse"
-2. Ingresa un email y contraseña
-3. Verifica que se cree el usuario
-
-### Test 3: Dashboard
-1. Después de login, deberías ver el dashboard
-2. Verifica que muestre estadísticas
-3. Navega entre las secciones (Tareas, Plan Mensual, Bitácora)
-
-### Test 4: Crear Tarea
-1. Ve a "Tareas"
-2. Clic en "Nueva Tarea"
-3. Crea una tarea de prueba
-4. Verifica que se guarde correctamente
+1. Revisa las variables y clic en **"Create Web Service"**
+2. Render clona, instala dependencias y arranca el servicio (3-5 min)
+3. Cuando veas **"Live"** ✅, copia la URL real que te asignó
+4. Si difiere de la que pusiste en `ALLOWED_ORIGINS`, actualízala (Environment → editar → Save, redespliega solo)
+5. Repite el dominio real en Firebase Authentication → Authorized domains (Paso 5)
 
 ---
 
-## 📊 Paso 11: Ver Logs (si hay problemas)
+## 🧪 Paso 7: Probar la Aplicación
 
-Si algo no funciona:
+1. **Login**: abre la URL, debe verse la pantalla "Centro de Mando" (no la de tareas personales)
+2. **Registro**: solo si necesitas una cuenta nueva de prueba (recuerda: el primer usuario que se registre queda como `admin` — si ya tienes admin, no vuelvas a probar el registro sin querer)
+3. **Dashboard**: KPIs, Retos, Actividades (agrupadas por reto/proceso), Presupuesto
+4. **Administración** (si tu rol es admin): usuarios, roles y catálogos
 
-1. En Render, menú izquierdo → **"Logs"**
-2. Verás la consola del servidor
-3. Busca líneas rojas (errores)
-4. Los errores comunes y soluciones están abajo
+---
+
+## 📊 Ver Logs (si hay problemas)
+
+Render → menú izquierdo → **"Logs"**. Errores típicos de Firestore (cuota
+agotada del plan gratuito `429 Quota exceeded`, o `PERMISSION_DENIED` si el
+service account está mal pegado) aparecen ahí explícitamente.
 
 ---
 
 ## ❌ Troubleshooting
 
-### Error: "Application failed to respond"
+### "Application failed to respond" / "502 Bad Gateway"
+Verifica el Start Command: `uvicorn main:app --host 0.0.0.0 --port $PORT` (con `$PORT`, no un puerto fijo).
 
-**Causa:** El servidor no arrancó correctamente
+### Error de CORS al hacer login
+`ALLOWED_ORIGINS` no coincide con la URL real de Render. Corrígela sin `/` al final.
 
-**Solución:**
-1. Verifica que el Start Command sea: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-2. Revisa los logs para ver el error específico
+### "auth/unauthorized-domain" en el login
+Falta agregar el dominio de Render en Firebase Authentication → Authorized domains (Paso 5).
 
-### Error: "502 Bad Gateway"
+### 500 Internal Server Error / "Quota exceeded" en los logs
+Se agotó la cuota diaria gratuita de Firestore (plan Spark). Opciones:
+- Esperar el reinicio diario (medianoche hora Pacífico, EE.UU.)
+- Actualizar el proyecto de Firebase al plan **Blaze** (pago por uso, con umbral gratuito generoso)
 
-**Causa:** La aplicación no está escuchando en el puerto correcto
-
-**Solución:**
-1. Verifica que uses `--port $PORT` (con el símbolo `$`)
-2. NO uses un puerto fijo como `--port 8000`
-
-### Error: CORS al intentar login
-
-**Causa:** `ALLOWED_ORIGINS` no coincide con la URL
-
-**Solución:**
-1. Ve a Environment Variables
-2. Edita `ALLOWED_ORIGINS` con tu URL exacta de Render
-3. NO incluyas `/` al final
-
-### Error: "Database connection failed"
-
-**Causa:** Credenciales de Supabase incorrectas
-
-**Solución:**
-1. Ve a Supabase Dashboard → Settings → API
-2. Copia nuevamente las keys
-3. Actualiza las variables en Render
-4. Guarda y espera el redespliegue
-
-### App muy lenta o se "duerme"
-
-**Causa:** Plan Free se duerme después de 15 minutos
-
-**Solución:**
-1. Primera carga: Espera 30-60 segundos (normal)
-2. Para mantenerla activa: Usa [UptimeRobot](https://uptimerobot.com) (gratis)
-   - Configura ping cada 14 minutos
-   - Tu app nunca se dormirá
+### La app tarda 30-60s en la primera carga
+Normal en el plan Free de Render: el servicio "duerme" tras 15 min sin tráfico.
+Para evitarlo, usa [UptimeRobot](https://uptimerobot.com) (gratis) con un ping
+cada 14 minutos a tu URL.
 
 ---
 
 ## 🔄 Actualizar la Aplicación
 
-Cuando hagas cambios al código:
-
 ```bash
-# 1. Hacer cambios en tu código local
-# 2. Commit y push
 git add .
 git commit -m "Descripción de cambios"
 git push origin main
-
-# 3. Render detectará el cambio y redesplegará automáticamente
+# Render redespliega automáticamente
 ```
 
 ---
 
-## 📈 Monitoreo (Opcional pero Recomendado)
+## 🎉 Resumen
 
-### Mantener la app siempre activa (GRATIS)
-
-1. Ve a [uptimerobot.com](https://uptimerobot.com)
-2. Crea cuenta gratis (NO requiere tarjeta)
-3. Clic en **"Add New Monitor"**
-4. Configuración:
-   - **Monitor Type:** HTTP(s)
-   - **Friendly Name:** Plan Desarrollo Profesional
-   - **URL:** `https://plan-desarrollo-profesional.onrender.com`
-   - **Monitoring Interval:** 14 minutes
-5. Clic en **"Create Monitor"**
-
-¡Listo! Tu app nunca se dormirá 🎉
-
----
-
-## 🎉 ¡Despliegue Completado!
-
-Tu aplicación está ahora en producción:
-- 🌐 **URL:** `https://plan-desarrollo-profesional.onrender.com`
-- 🔒 **SSL/HTTPS:** Activado automáticamente
-- 💰 **Costo:** $0.00/mes
-- 📊 **Límites:** 750 horas/mes (suficiente para uso personal)
-
-### Próximos pasos:
-
-1. **Comparte tu URL** con usuarios para que la prueben
-2. **Configura UptimeRobot** para mantenerla siempre activa
-3. **Monitorea los logs** en Render regularmente
-4. **Haz backups** de tu base de datos en Supabase
-
----
-
-## 📞 Soporte
-
-Si tienes problemas:
-1. Revisa la sección de Troubleshooting arriba
-2. Consulta los logs en Render
-3. Verifica la [Guía Completa](./GUIA_PRODUCCION.md) para más detalles
-
----
-
-**¡Felicidades por tu despliegue exitoso! 🚀**
+- 🌐 **Repo**: https://github.com/PlaneacionPoli/seguimiento-retos-planeacion
+- 🔐 **Auth/BD**: Firebase (Authentication + Firestore)
+- 💰 **Costo Render**: $0/mes en plan Free (750 h/mes)
+- 📄 Detalles adicionales: [GUIA_PRODUCCION.md](./GUIA_PRODUCCION.md) *(nota: aún referencia la versión anterior en algunas secciones — pide una actualización si la necesitas)*
