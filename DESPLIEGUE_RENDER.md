@@ -58,50 +58,74 @@ git push origin main
 
 ## 🔐 Paso 4: Variables de Entorno
 
-Antes de crear el servicio, en **"Environment Variables"**, agrega cada una:
+Antes de crear el servicio, en **"Environment Variables"** (o después, en
+**Environment** del servicio ya creado), agrega cada una con **"Add Environment Variable"**.
+Debajo de cada una se explica exactamente de dónde sacar el valor.
 
-### 1. FIREBASE_SERVICE_ACCOUNT_JSON (secreta)
-Pega el **contenido completo del JSON de la service account en una sola línea**.
-No lo escribas a mano: genera el valor localmente y cópialo desde el archivo
-(nunca lo compartas ni lo subas a git):
+### 1. `FIREBASE_SERVICE_ACCOUNT_JSON` (secreta)
 
+Es la credencial del **Admin SDK** — le da al backend acceso total a Firestore/Auth.
+
+**De dónde sale:**
+1. Ve a [Firebase Console](https://console.firebase.google.com/) → abre el proyecto **`gerencia-planeacion-y-gestion`**
+2. Clic en el ⚙️ (engranaje) junto a "Project Overview", arriba a la izquierda → **"Configuración del proyecto"** ("Project settings")
+3. Pestaña **"Cuentas de servicio"** ("Service accounts")
+4. Botón **"Generar nueva clave privada"** ("Generate new private key") → confirma → se descarga un `.json`
+
+Ya tienes uno descargado en el proyecto local como `firebase-service-account.json` (lo usamos para correr la app en tu máquina) — puedes reutilizar ese mismo, no hace falta generar uno nuevo salvo que lo hayas perdido.
+
+**Cómo pasarlo a Render** (el valor debe ir en una sola línea, y el archivo tiene varias):
 ```bash
 python -c "import json; print(json.dumps(json.load(open('firebase-service-account.json', encoding='utf-8'))))" > service_account_oneline_NO_SUBIR.txt
 ```
+Abre `service_account_oneline_NO_SUBIR.txt`, copia **todo** su contenido (empieza con `{"type": "service_account", ...}`) y pégalo como valor de esta variable en Render. Ese archivo ya está en `.gitignore`; bórralo localmente cuando termines.
 
-Abre `service_account_oneline_NO_SUBIR.txt`, copia todo su contenido y pégalo como
-valor de esta variable en Render. Ese archivo ya está en `.gitignore` — bórralo
-localmente cuando termines si quieres.
+⚠️ Trátalo como una contraseña maestra: quien tenga este valor puede leer y borrar toda la base de datos.
 
-### 2. FIREBASE_STORAGE_BUCKET
+### 2. `FIREBASE_STORAGE_BUCKET`
+
+**De dónde sale:** Firebase Console → menú izquierdo **"Storage"** (no "Firestore Database", son secciones distintas). Si aparece un botón "Comenzar"/"Get started", Storage **no está activado** (requiere plan Blaze) — en ese caso deja esta variable **vacía**; la app sube evidencias a una carpeta local `/uploads` como respaldo automático. Si ya lo activaste, el nombre del bucket aparece arriba, como `gs://gerencia-planeacion-y-gestion.appspot.com` — copia solo la parte después de `gs://`, sin barra al final.
+
+### 3-8. Configuración pública del frontend
+
+**De dónde sale (los 6 valores salen de la misma pantalla):**
+1. Firebase Console → ⚙️ → **"Configuración del proyecto"** → pestaña **"General"**
+2. Baja hasta **"Tus apps"** ("Your apps") → busca la app web (ícono `</>`, no la de Android/iOS)
+3. Si no ves una, créala con **"Agregar app" → Web** (nombre libre, no hace falta Firebase Hosting)
+4. Clic en **"Configuración del SDK"** ("SDK setup and configuration") → opción **"Config"** (no "npm")
+5. Verás un bloque `const firebaseConfig = { ... }` — cada campo va a esta variable:
+
+| Campo en `firebaseConfig` | Variable de entorno |
+|---|---|
+| `apiKey` | `FIREBASE_WEB_API_KEY` |
+| `authDomain` | `FIREBASE_WEB_AUTH_DOMAIN` |
+| `projectId` | `FIREBASE_WEB_PROJECT_ID` |
+| `storageBucket` | `FIREBASE_WEB_STORAGE_BUCKET` |
+| `messagingSenderId` | `FIREBASE_WEB_MESSAGING_SENDER_ID` |
+| `appId` | `FIREBASE_WEB_APP_ID` |
+
+Estos 6 valores **no son secretos** (se inyectan tal cual en el HTML que ve el navegador), así que no hay riesgo en copiarlos directamente. Ya están guardados en tu `.env` local si quieres copiarlos de ahí en vez de volver a la consola.
+
+### 9. `ENVIRONMENT`
+
+**De dónde sale:** no es de Firebase, es una bandera propia de la app. Escribe literalmente:
 ```
-Value: (dejar vacío mientras no actives Firebase Storage — la app usa /uploads local como respaldo)
+production
 ```
 
-### 3-8. Configuración pública del frontend (copia los valores de tu `.env` local)
-```
-FIREBASE_WEB_API_KEY=...
-FIREBASE_WEB_AUTH_DOMAIN=gerencia-planeacion-y-gestion.firebaseapp.com
-FIREBASE_WEB_PROJECT_ID=gerencia-planeacion-y-gestion
-FIREBASE_WEB_STORAGE_BUCKET=gerencia-planeacion-y-gestion.firebasestorage.app
-FIREBASE_WEB_MESSAGING_SENDER_ID=...
-FIREBASE_WEB_APP_ID=...
-```
+### 10. `ALLOWED_ORIGINS`
 
-### 9. ENVIRONMENT
+**De dónde sale:** es la URL que Render le asigna a tu servicio (se confirma en el Paso 6, después de crearlo — Render la muestra arriba del todo una vez que el servicio está "Live"). Como todavía no la conoces al crear el servicio, escribe el valor que planeas usar según el **Name** que le pusiste en el Paso 3:
 ```
-Value: production
+https://seguimiento-retos-planeacion.onrender.com
 ```
+⚠️ Si Render te asignó un nombre distinto (por ejemplo, con un sufijo `-xxxx` porque el nombre exacto ya estaba tomado), edita esta variable después con la URL real — sin `/` al final.
 
-### 10. ALLOWED_ORIGINS
-```
-Value: https://seguimiento-retos-planeacion.onrender.com
-```
-⚠️ Ajusta el dominio si Render te asigna uno distinto (lo confirmas en el Paso 6).
+### 11. `DEBUG`
 
-### 11. DEBUG
+**De dónde sale:** tampoco es de Firebase. Escribe literalmente:
 ```
-Value: False
+False
 ```
 
 > Ya **no** se usan `SUPABASE_*`, `SECRET_KEY`, `ALGORITHM` ni
