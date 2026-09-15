@@ -235,8 +235,10 @@ table.data-table.act-table{min-width:1080px}
 .act-sub .material-symbols-outlined{font-size:13px}
 .act-right{display:flex;align-items:center;gap:10px;flex:none}
 
-.act-row-v2{display:flex;align-items:center;gap:16px;padding:13px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:box-shadow .12s ease,border-color .12s ease;}
+.act-row-v2{display:flex;align-items:center;gap:16px;padding:13px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);border-left:3px solid transparent;cursor:pointer;transition:box-shadow .12s ease,border-color .12s ease;}
 .act-row-v2:hover{box-shadow:var(--shadow-sm);border-color:var(--border-strong)}
+.act-row-v2.tiene-hijas{border-left-color:var(--accent);background:linear-gradient(90deg, var(--info-bg) 0%, var(--surface) 6%)}
+.badge-hijas{background:var(--info-bg);color:var(--accent-ink);padding:2px 8px;border-radius:20px;font-weight:700}
 .act-proc-tag{width:172px;flex:none;min-width:0;display:flex;align-items:center;gap:9px}
 .proc-icon{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}
 .proc-icon .material-symbols-outlined{font-size:15px}
@@ -646,7 +648,7 @@ table.data-table.act-table{min-width:1080px}
               <div class="act-list">
                 <template x-for="act in grupo.items" :key="act.id">
                   <div>
-                    <div class="act-row-v2" @click="act.es_macroactividad ? toggleMacro(act) : verDetalle(act)">
+                    <div class="act-row-v2" :class="act.es_macroactividad && hijasDeMacro(act).length ? 'tiene-hijas' : ''" @click="act.es_macroactividad ? toggleMacro(act) : verDetalle(act)">
                       <span class="act-check" :class="(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado' ? 'done' : ''">
                         <span class="material-symbols-outlined" x-show="(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado'">check</span>
                       </span>
@@ -654,7 +656,8 @@ table.data-table.act-table{min-width:1080px}
                         <div class="act-title-v2" x-text="act.nombre"></div>
                         <div class="act-meta-v2">
                           <span class="chip" :class="'st-' + estadoSlug(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)" x-text="act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo"></span>
-                          <span x-show="act.es_macroactividad"><span class="material-symbols-outlined">layers</span><span x-text="'Macroactividad · ' + hijasDeMacro(act).length + ' hija(s)'"></span></span>
+                          <span class="badge-hijas" x-show="act.es_macroactividad && hijasDeMacro(act).length"><span class="material-symbols-outlined">layers</span><span x-text="hijasDeMacro(act).length + ' actividades asociadas'"></span></span>
+                          <span x-show="act.es_macroactividad && !hijasDeMacro(act).length"><span class="material-symbols-outlined">layers</span>Macroactividad</span>
                           <span><span class="material-symbols-outlined">person</span><span x-text="nombreUsuario(act.responsable_id)"></span></span>
                           <span x-show="grupo.tipo === 'proceso'"><span class="material-symbols-outlined">folder</span><span x-text="(act.proceso||'') + (act.subproceso ? ' · ' + act.subproceso : '')"></span></span>
                         </div>
