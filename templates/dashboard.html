@@ -687,8 +687,8 @@ table.data-table.act-table{min-width:1080px}
                     <div class="act-list">
                       <template x-for="act in sg.actividades" :key="act.id">
                   <div>
-                    <div class="act-row-v2" :class="act.es_macroactividad && hijasDeMacro(act).length ? 'tiene-hijas' : ''" @click="act.es_macroactividad ? toggleMacro(act) : verDetalle(act)">
-                      <span class="act-check" :class="[(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado' ? 'done' : '', !act.es_macroactividad ? 'clickable' : '']" @click.stop="!act.es_macroactividad && marcarCompletado(act)" :title="!act.es_macroactividad ? 'Marcar completado / no iniciado' : ''">
+                    <div class="act-row-v2" :class="act.es_macroactividad && hijasDeMacro(act).length ? 'tiene-hijas' : ''" @click="(act.es_macroactividad && hijasDeMacro(act).length) ? toggleMacro(act) : verDetalle(act)">
+                      <span class="act-check" :class="[(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado' ? 'done' : '', !(act.es_macroactividad && hijasDeMacro(act).length) ? 'clickable' : '']" @click.stop="!(act.es_macroactividad && hijasDeMacro(act).length) && marcarCompletado(act)" :title="!(act.es_macroactividad && hijasDeMacro(act).length) ? 'Marcar completado / no iniciado' : ''">
                         <span class="material-symbols-outlined" x-show="(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado'">check</span>
                       </span>
                       <div class="act-main-v2">
@@ -923,8 +923,8 @@ table.data-table.act-table{min-width:1080px}
     <div class="act-list">
       <template x-for="macro in (macroactividadesPorReto[drawerReto?.id] || [])" :key="macro.id">
         <div class="act-row" style="flex-direction:column;align-items:stretch;gap:8px;cursor:default">
-          <div style="display:flex;align-items:center;gap:12px;cursor:pointer" @click="toggleMacro(macro)">
-            <span class="act-check" :class="macro.estado_efectivo==='Completado' ? 'done' : (macro.estado_efectivo==='Atrasado' ? 'warn' : '')">
+          <div style="display:flex;align-items:center;gap:12px;cursor:pointer" @click="hijasDeMacro(macro).length ? toggleMacro(macro) : verDetalle(macro)">
+            <span class="act-check" :class="[macro.estado_efectivo==='Completado' ? 'done' : '', !hijasDeMacro(macro).length ? 'clickable' : '']" @click.stop="!hijasDeMacro(macro).length && marcarCompletado(macro)" :title="!hijasDeMacro(macro).length ? 'Marcar completado / no iniciado' : ''">
               <span class="material-symbols-outlined" x-show="macro.estado_efectivo==='Completado'">check</span>
             </span>
             <div class="act-main">
