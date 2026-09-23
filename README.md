@@ -1,4 +1,4 @@
-# 🚀 Plan de Desarrollo Profesional - Aplicación Web
+# 🚀 Avanza · Gestor de Planeación
 
 ## 📋 Descripción
 Aplicación web completa para gestionar tu plan de desarrollo profesional con:

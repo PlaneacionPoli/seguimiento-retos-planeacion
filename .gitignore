@@ -14,15 +14,15 @@ firebase-service-account.json
 # =======================================
 
 # Carpetas del entorno virtual
-Scripts/
-Lib/
-Include/
-pyvenv.cfg
 venv/
 env/
 ENV/
 env.bak/
 venv.bak/
+venv/Scripts/
+venv/Lib/
+venv/Include/
+pyvenv.cfg
 
 # =======================================
 # ARCHIVOS DE PYTHON
@@ -168,10 +168,10 @@ lerna-debug.log*
 *.old
 *.tmp
 backup_*.json
+backup_*.xlsx
 
-# Datos de origen (ya importados a Firestore, no deben publicarse en el repo)
-BD_Planeacion.xlsx
-Base_Completa_Retos_2026.xlsx
+# Datos de origen archivados (ya importados a Firestore, no deben publicarse en el repo)
+scripts/archive/data/
 
 # Certificados y claves
 *.pem

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro de Mando · Seguimiento de Retos</title>
+    <title>Avanza · Gestor de Planeación</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24'%3E%3Cstop offset='0' stop-color='%230ea9c2'/%3E%3Cstop offset='1' stop-color='%231f9fd6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' rx='6' fill='url(%23g)'/%3E%3Crect x='3' y='14' width='3.4' height='7' rx='1' fill='white' opacity='.55'/%3E%3Crect x='8.6' y='10' width='3.4' height='11' rx='1' fill='white' opacity='.8'/%3E%3Crect x='14.2' y='6' width='3.4' height='15' rx='1' fill='white'/%3E%3Cpath d='M13.6 4H20V10.4' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M20 4L12.3 11.7' stroke='white' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,10 +28,10 @@
         .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 500; vertical-align:middle;}
         .card{width:100%; max-width:400px; background:#fff; border:1px solid var(--border); border-radius:18px;
               box-shadow:0 18px 48px -12px rgba(15,28,48,.24); padding:32px;}
-        .brand-mark{width:56px;height:56px;border-radius:14px;margin:0 auto 16px;background:linear-gradient(135deg,var(--brand-2),var(--accent));
+        .brand-mark{width:56px;height:56px;border-radius:16px;margin:0 auto 16px;background:linear-gradient(135deg,var(--brand-2),var(--accent));
                     display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 8px 20px -6px rgba(31,159,214,.6);}
-        h1{font-family:"Poppins",sans-serif; font-size:22px; font-weight:800; color:var(--ink); text-align:center; margin:0}
-        p.sub{text-align:center; color:var(--ink-faint); font-size:13px; margin:4px 0 24px}
+        h1{font-family:"Poppins",sans-serif; font-size:26px; font-weight:800; color:var(--ink); text-align:center; margin:0; letter-spacing:.2px}
+        p.sub{text-align:center; color:var(--ink-faint); font-size:13px; font-weight:600; letter-spacing:.3px; text-transform:uppercase; margin:4px 0 24px}
         .tabs{display:flex; background:#eaf1f6; border-radius:10px; padding:3px; margin-bottom:20px;}
         .tabs span{flex:1; text-align:center; padding:8px; border-radius:8px; font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer;}
         .tabs span.active{background:#fff; color:var(--accent-ink); box-shadow:0 1px 3px rgba(0,0,0,.08);}
@@ -55,9 +56,17 @@
 <body x-data="loginData()" x-init="checkAuth()">
 
     <div class="card">
-        <div class="brand-mark"><span class="material-symbols-outlined" style="font-size:26px">account_balance</span></div>
-        <h1>Centro de Mando</h1>
-        <p class="sub">Seguimiento de Retos y Plan Operativo</p>
+        <div class="brand-mark">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="14" width="3.4" height="7" rx="1" fill="#fff" opacity=".55"/>
+                <rect x="8.6" y="10" width="3.4" height="11" rx="1" fill="#fff" opacity=".8"/>
+                <rect x="14.2" y="6" width="3.4" height="15" rx="1" fill="#fff"/>
+                <path d="M13.6 4H20V10.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20 4L12.3 11.7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <h1>Avanza</h1>
+        <p class="sub">Gestor de Planeación</p>
 
         <div class="tabs">
             <span :class="isLogin ? 'active' : ''" @click="isLogin = true">Iniciar Sesión</span>

@@ -100,8 +100,8 @@ security = HTTPBearer()
 # ============================================
 
 app = FastAPI(
-    title="Seguimiento de Retos y Plan Operativo",
-    description="Gerencia de Planeación y Gestión Institucional",
+    title="Avanza",
+    description="Gestor de Planeación - Gerencia de Planeación y Gestión Institucional",
     version="3.0.0",
     docs_url=None if IS_PRODUCTION else "/docs",
     redoc_url=None if IS_PRODUCTION else "/redoc",
