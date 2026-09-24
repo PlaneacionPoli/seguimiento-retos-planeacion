@@ -633,9 +633,7 @@ table.data-table.act-table{min-width:1080px}
         <span class="spacer"></span>
         <span class="count-pill" x-text="actividadesOrdenadas().length + ' actividades'"></span>
         <button class="clear-btn" @click="filtros={proceso:'',subproceso:'',estado:'',responsable_id:''}; cargarActividades()">Limpiar filtros</button>
-        <template x-if="rol === 'gerencia' || rol === 'admin'">
-          <button class="btn btn-primary" @click="abrirModalActividad(null)"><span class="material-symbols-outlined" style="font-size:16px">add</span>Nueva actividad</button>
-        </template>
+        <button class="btn btn-primary" @click="abrirModalActividad(null)"><span class="material-symbols-outlined" style="font-size:16px">add</span>Nueva actividad</button>
       </div>
 
       <div class="act-groups">
@@ -727,9 +725,7 @@ table.data-table.act-table{min-width:1080px}
                           <button class="icon-btn" @click="verDetalle(act)" title="Ver detalle"><span class="material-symbols-outlined">open_in_new</span></button>
                         </template>
                         <button class="icon-btn" @click="abrirModalSeguimiento(act)" title="Registrar avance"><span class="material-symbols-outlined">track_changes</span></button>
-                        <template x-if="rol === 'gerencia' || rol === 'admin'">
-                          <button class="icon-btn" @click="abrirModalActividad(act)" title="Editar"><span class="material-symbols-outlined">edit</span></button>
-                        </template>
+                        <button class="icon-btn" @click="abrirModalActividad(act)" title="Editar"><span class="material-symbols-outlined">edit</span></button>
                         <template x-if="rol === 'gerencia' || rol === 'admin'">
                           <button class="icon-btn" @click="eliminarActividad(act)" title="Eliminar"><span class="material-symbols-outlined">delete</span></button>
                         </template>
@@ -759,9 +755,7 @@ table.data-table.act-table{min-width:1080px}
                           </div>
                           <div class="act-actions-col" @click.stop>
                             <button class="icon-btn" @click="abrirModalSeguimiento(hija)" title="Registrar avance"><span class="material-symbols-outlined">track_changes</span></button>
-                            <template x-if="rol === 'gerencia' || rol === 'admin'">
-                              <button class="icon-btn" @click="abrirModalActividad(hija)" title="Editar"><span class="material-symbols-outlined">edit</span></button>
-                            </template>
+                            <button class="icon-btn" @click="abrirModalActividad(hija)" title="Editar"><span class="material-symbols-outlined">edit</span></button>
                           </div>
                         </div>
                       </template>
@@ -990,10 +984,11 @@ table.data-table.act-table{min-width:1080px}
     </div>
     <div class="form-row" x-show="!formActividad.es_macroactividad">
       <div><span class="form-label">Responsable</span>
-        <select class="form-select" x-model="formActividad.responsable_id">
+        <select class="form-select" x-model="formActividad.responsable_id" x-show="rol !== 'responsable'">
           <option value="">Seleccionar responsable...</option>
           <template x-for="u in usuarios" :key="u.id"><option :value="u.id" x-text="u.nombre_completo || u.email"></option></template>
         </select>
+        <input class="form-input" x-show="rol === 'responsable'" disabled value="Tú (usuario actual)">
       </div>
       <div><span class="form-label">Prioridad</span>
         <select class="form-select" x-model="formActividad.prioridad">
@@ -1003,10 +998,11 @@ table.data-table.act-table{min-width:1080px}
     </div>
     <div class="form-row" x-show="formActividad.es_macroactividad">
       <div><span class="form-label">Responsable</span>
-        <select class="form-select" x-model="formActividad.responsable_id">
+        <select class="form-select" x-model="formActividad.responsable_id" x-show="rol !== 'responsable'">
           <option value="">Seleccionar responsable...</option>
           <template x-for="u in usuarios" :key="u.id"><option :value="u.id" x-text="u.nombre_completo || u.email"></option></template>
         </select>
+        <input class="form-input" x-show="rol === 'responsable'" disabled value="Tú (usuario actual)">
       </div>
       <div><span class="form-label">Proceso</span>
         <select class="form-select" x-model="formActividad.proceso" @change="formActividad.subproceso=''; autoAsignarResponsable()">
@@ -1214,6 +1210,7 @@ table.data-table.act-table{min-width:1080px}
 function appData() {
     return {
         rol: null,
+        uid: null,
         userInitials: '',
         section: 'panel',
         ESTADOS: ['No iniciado', 'En curso', 'Completado', 'Atrasado', 'Cancelado'],
@@ -1259,12 +1256,13 @@ function appData() {
             this.userInitials = (user.email || 'U').charAt(0).toUpperCase();
             const tokenResult = await user.getIdTokenResult();
             this.rol = tokenResult.claims.rol || 'responsable';
+            this.uid = user.uid;
 
             await this.cargarCatalogos();
             await this.cargarKpis();
             await this.cargarRetos();
             await this.cargarActividades();
-            if (this.rol !== 'responsable') await this.cargarUsuarios();
+            await this.cargarUsuarios();
         },
 
         async apiCall(endpoint, method = 'GET', data = null, isFormData = false) {
@@ -1615,7 +1613,7 @@ function appData() {
         abrirModalActividad(actividad, defaults = {}) {
             this.editingActividad = actividad;
             this.formActividad = actividad ? { ...actividad } : {
-                nombre: '', descripcion: '', entregable: '', responsable_id: '',
+                nombre: '', descripcion: '', entregable: '', responsable_id: this.rol === 'responsable' ? this.uid : '',
                 proceso: '', subproceso: '', periodicidad: '', fecha_inicio: '', fecha_fin: '',
                 prioridad: 'media', estado: 'No iniciado', reto_id: '', parent_id: '',
                 es_macroactividad: false, avance_actual: 0, avance_esperado: 100,

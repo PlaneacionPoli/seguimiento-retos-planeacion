@@ -310,6 +310,15 @@ def get_actividad_autorizada(actividad_id: str, current: CurrentUser) -> dict:
         raise HTTPException(status_code=403, detail="No tienes acceso a esta actividad")
     return data
 
+def retos_permitidos_responsable(current: CurrentUser) -> set:
+    """IDs de retos visibles para un responsable: donde es líder o tiene actividades asignadas."""
+    ids = {d.id for d in db.collection("retos").where("lider_id", "==", current.uid).stream()}
+    for d in db.collection("actividades").where("responsable_id", "==", current.uid).stream():
+        reto_id = d.to_dict().get("reto_id")
+        if reto_id:
+            ids.add(reto_id)
+    return ids
+
 # ============================================
 # RUTAS - AUTENTICACIÓN
 # ============================================
@@ -364,6 +373,9 @@ async def get_me(current: CurrentUser = Depends(get_current_user)):
 @app.get("/api/retos")
 async def listar_retos(current: CurrentUser = Depends(get_current_user)):
     retos = [doc_to_dict(d) for d in db.collection("retos").stream()]
+    if current.rol == "responsable":
+        permitidos = retos_permitidos_responsable(current)
+        retos = [r for r in retos if r["id"] in permitidos]
     top_level = [doc_to_dict(d) for d in db.collection("actividades").where("parent_id", "==", None).stream()]
 
     for r in retos:
@@ -379,10 +391,14 @@ async def obtener_reto(reto_id: str, current: CurrentUser = Depends(get_current_
     data = doc_to_dict(db.collection("retos").document(reto_id).get())
     if not data:
         raise HTTPException(404, "Reto no encontrado")
+    if current.rol == "responsable" and reto_id not in retos_permitidos_responsable(current):
+        raise HTTPException(status_code=403, detail="No tienes acceso a este reto")
     return data
 
 @app.get("/api/retos/{reto_id}/macroactividades")
 async def listar_macroactividades(reto_id: str, current: CurrentUser = Depends(get_current_user)):
+    if current.rol == "responsable" and reto_id not in retos_permitidos_responsable(current):
+        raise HTTPException(status_code=403, detail="No tienes acceso a este reto")
     docs = db.collection("actividades").where("reto_id", "==", reto_id).where("parent_id", "==", None).stream()
     macros = [doc_to_dict(d) for d in docs]
     for m in macros:
@@ -455,14 +471,21 @@ async def obtener_actividad(actividad_id: str, current: CurrentUser = Depends(ge
     return data
 
 @app.post("/api/actividades")
-async def crear_actividad(payload: ActividadCreate, current: CurrentUser = Depends(require_role("gerencia", "admin"))):
+async def crear_actividad(payload: ActividadCreate, current: CurrentUser = Depends(get_current_user)):
     data = payload.dict()
+    if current.rol == "responsable":
+        if data.get("responsable_id") and data["responsable_id"] != current.uid:
+            raise HTTPException(status_code=403, detail="Solo puedes crear actividades asignadas a ti mismo")
+        data["responsable_id"] = current.uid
     dates_to_iso(data, ["fecha_inicio", "fecha_fin"])
     return create_doc("actividades", data)
 
 @app.put("/api/actividades/{actividad_id}")
-async def actualizar_actividad(actividad_id: str, payload: ActividadUpdate, current: CurrentUser = Depends(require_role("gerencia", "admin"))):
+async def actualizar_actividad(actividad_id: str, payload: ActividadUpdate, current: CurrentUser = Depends(get_current_user)):
+    get_actividad_autorizada(actividad_id, current)
     data = payload.dict(exclude_unset=True)
+    if current.rol == "responsable" and "responsable_id" in data and data["responsable_id"] != current.uid:
+        raise HTTPException(status_code=403, detail="No puedes reasignar el responsable de la actividad")
     dates_to_iso(data, ["fecha_inicio", "fecha_fin"])
     return update_doc("actividades", actividad_id, data)
 
@@ -638,7 +661,7 @@ async def actualizar_catalogos(payload: CatalogosUpdate, current: CurrentUser = 
 # ============================================
 
 @app.get("/api/admin/usuarios")
-async def listar_usuarios(current: CurrentUser = Depends(require_role("gerencia", "admin"))):
+async def listar_usuarios(current: CurrentUser = Depends(get_current_user)):
     usuarios = [doc_to_dict(d) for d in db.collection("usuarios").stream()]
     usuarios.sort(key=lambda u: u.get("nombre_completo") or u.get("email") or "")
     return usuarios
