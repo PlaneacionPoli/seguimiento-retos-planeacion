@@ -440,6 +440,14 @@ async def listar_actividades(
 ):
     if current.rol == "responsable":
         docs = [doc_to_dict(d) for d in db.collection("actividades").where("responsable_id", "==", current.uid).stream()]
+        # Si tiene actividades hijas cuya macroactividad padre pertenece a otro responsable,
+        # se incluye esa macro (solo lectura) para que la hija tenga dónde anidarse en la UI.
+        ids_presentes = {d["id"] for d in docs}
+        parent_ids = {d.get("parent_id") for d in docs if d.get("parent_id")} - ids_presentes
+        for pid in parent_ids:
+            padre = doc_to_dict(db.collection("actividades").document(pid).get())
+            if padre:
+                docs.append(padre)
     else:
         docs = [doc_to_dict(d) for d in db.collection("actividades").stream()]
         if responsable_id:

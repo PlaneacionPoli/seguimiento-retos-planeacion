@@ -695,7 +695,7 @@ table.data-table.act-table{min-width:1080px}
                       <template x-for="act in sg.actividades" :key="act.id">
                   <div>
                     <div class="act-row-v2" :class="act.es_macroactividad && hijasDeMacro(act).length ? 'tiene-hijas' : ''" @click="(act.es_macroactividad && hijasDeMacro(act).length) ? toggleMacro(act) : verDetalle(act)">
-                      <span class="act-check" :class="[(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado' ? 'done' : '', !(act.es_macroactividad && hijasDeMacro(act).length) ? 'clickable' : '']" @click.stop="!(act.es_macroactividad && hijasDeMacro(act).length) && marcarCompletado(act)" :title="!(act.es_macroactividad && hijasDeMacro(act).length) ? 'Marcar completado / no iniciado' : ''">
+                      <span class="act-check" :class="[(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado' ? 'done' : '', (esPropia(act) && !(act.es_macroactividad && hijasDeMacro(act).length)) ? 'clickable' : '']" @click.stop="esPropia(act) && !(act.es_macroactividad && hijasDeMacro(act).length) && marcarCompletado(act)" :title="(esPropia(act) && !(act.es_macroactividad && hijasDeMacro(act).length)) ? 'Marcar completado / no iniciado' : ''">
                         <span class="material-symbols-outlined" x-show="(act.es_macroactividad ? estadoEfectivoMacro(act) : act.estado_efectivo)==='Completado'">check</span>
                       </span>
                       <div class="act-main-v2">
@@ -721,11 +721,15 @@ table.data-table.act-table{min-width:1080px}
                         </div>
                       </div>
                       <div class="act-actions-col" @click.stop>
-                        <template x-if="act.es_macroactividad">
+                        <template x-if="act.es_macroactividad && esPropia(act)">
                           <button class="icon-btn" @click="verDetalle(act)" title="Ver detalle"><span class="material-symbols-outlined">open_in_new</span></button>
                         </template>
-                        <button class="icon-btn" @click="abrirModalSeguimiento(act)" title="Registrar avance"><span class="material-symbols-outlined">track_changes</span></button>
-                        <button class="icon-btn" @click="abrirModalActividad(act)" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+                        <template x-if="esPropia(act)">
+                          <button class="icon-btn" @click="abrirModalSeguimiento(act)" title="Registrar avance"><span class="material-symbols-outlined">track_changes</span></button>
+                        </template>
+                        <template x-if="esPropia(act)">
+                          <button class="icon-btn" @click="abrirModalActividad(act)" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+                        </template>
                         <template x-if="rol === 'gerencia' || rol === 'admin'">
                           <button class="icon-btn" @click="eliminarActividad(act)" title="Eliminar"><span class="material-symbols-outlined">delete</span></button>
                         </template>
@@ -735,7 +739,7 @@ table.data-table.act-table{min-width:1080px}
                     <div x-show="act.es_macroactividad && macroExpandido[act.id]" x-collapse style="padding:0 0 8px 30px;display:flex;flex-direction:column;gap:6px">
                       <template x-for="hija in (actividadesHijasPorMacro[act.id] || [])" :key="hija.id">
                         <div class="act-row-v2" style="background:var(--surface-2)" @click="verDetalle(hija)">
-                          <span class="act-check clickable" :class="hija.estado_efectivo==='Completado' ? 'done' : ''" @click.stop="marcarCompletado(hija)" title="Marcar completado / no iniciado">
+                          <span class="act-check" :class="[hija.estado_efectivo==='Completado' ? 'done' : '', esPropia(hija) ? 'clickable' : '']" @click.stop="esPropia(hija) && marcarCompletado(hija)" :title="esPropia(hija) ? 'Marcar completado / no iniciado' : ''">
                             <span class="material-symbols-outlined" x-show="hija.estado_efectivo==='Completado'">check</span>
                           </span>
                           <div class="act-main-v2">
@@ -754,8 +758,12 @@ table.data-table.act-table{min-width:1080px}
                             <b x-text="formatoFecha(hija.fecha_inicio)"></b>
                           </div>
                           <div class="act-actions-col" @click.stop>
-                            <button class="icon-btn" @click="abrirModalSeguimiento(hija)" title="Registrar avance"><span class="material-symbols-outlined">track_changes</span></button>
-                            <button class="icon-btn" @click="abrirModalActividad(hija)" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+                            <template x-if="esPropia(hija)">
+                              <button class="icon-btn" @click="abrirModalSeguimiento(hija)" title="Registrar avance"><span class="material-symbols-outlined">track_changes</span></button>
+                            </template>
+                            <template x-if="esPropia(hija)">
+                              <button class="icon-btn" @click="abrirModalActividad(hija)" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+                            </template>
                           </div>
                         </div>
                       </template>
@@ -1620,6 +1628,10 @@ function appData() {
                 presupuesto_planeado: 0, presupuesto_ejecutado: 0, observaciones: '', ...defaults
             };
             this.showActividadModal = true;
+        },
+        esPropia(act) {
+            if (this.rol !== 'responsable') return true;
+            return act.responsable_id === this.uid;
         },
         autoAsignarResponsable() {
             if (this.formActividad.responsable_id) return;
