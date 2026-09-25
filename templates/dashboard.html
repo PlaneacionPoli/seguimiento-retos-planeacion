@@ -1415,8 +1415,8 @@ function appData() {
         },
         actividadesAgrupadasPorProceso() {
             // Estructura: Proceso -> Subproceso -> { retos: [...], actividades: [...] }
-            // Las filas "Reto: nombre" son un acceso rápido al drawer del reto; las actividades
-            // ligadas a un reto (reto_id) también se listan sueltas como checklist marcable.
+            // Las actividades ligadas a un reto (reto_id) no se listan sueltas: se acceden
+            // a través de la fila "Reto: nombre" (abre el drawer con sus macroactividades).
             const estructura = {};
             const asegurar = (proceso, subproceso) => {
                 const p = proceso || 'Sin proceso';
@@ -1425,7 +1425,7 @@ function appData() {
                 estructura[p][s] = estructura[p][s] || { retos: [], actividades: [] };
                 return estructura[p][s];
             };
-            this.actividadesOrdenadas().forEach(act => {
+            this.actividadesOrdenadas().filter(a => !a.reto_id).forEach(act => {
                 asegurar(act.proceso, act.subproceso).actividades.push(act);
             });
             this.retos.forEach(reto => {
